@@ -52,8 +52,8 @@ cd ../../..
 ```yaml
 exporters:
   azuregigwarm:
-    endpoint: "https://gcs.prod.monitoring.core.windows.net"
-    environment: "Production"
+    endpoint: "https://abc.windows.net"
+    environment: "Production" or "Test" or ...
     account: "YourAccount"
     namespace: "YourNamespace"
     region: "eastus"
