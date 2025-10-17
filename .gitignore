@@ -1,0 +1,48 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+*.test
+*.out
+
+# Go workspace file
+go.work
+
+# Rust/Cargo
+target/
+Cargo.lock
+*.pdb
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+*.log
+coverage.txt
+coverage.html
+test-build/
+test-collector/
+
+# Temporary files
+*.tmp
+*.bak
+
+# Credentials and secrets
+config.yaml
+*.p12
+*.pfx
+*.pem
+*.key
+credentials.json

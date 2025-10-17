@@ -1,0 +1,79 @@
+# Real Azure Geneva Backend Configuration Template
+# Copy this file to config-real-backend.yaml and fill in your actual values
+# DO NOT commit config-real-backend.yaml - it contains sensitive information
+
+# Persistent queue extension (protects against data loss during collector crashes)
+extensions:
+  file_storage:
+    directory: ${OTEL_FILE_STORAGE_DIR:-./storage}
+    timeout: 10s
+    compaction:
+      directory: ${OTEL_FILE_STORAGE_DIR:-./storage}
+      on_start: true
+      on_rebound: true
+      rebound_needed_threshold_mib: 5
+      rebound_trigger_threshold_mib: 10
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    send_batch_size: 10240     # 10K events
+    timeout: 5s
+
+exporters:
+  azuregigwarm:
+    endpoint: "${GENEVA_ENDPOINT}"
+    environment: "${GENEVA_ENVIRONMENT}"
+    account: "${GENEVA_ACCOUNT}"
+    namespace: "${GENEVA_NAMESPACE}"
+    region: "${GENEVA_REGION}"
+    config_major_version: ${GENEVA_CONFIG_VERSION:-1}
+    auth_method: ${GENEVA_AUTH_METHOD:-0}  # 0=MSI, 1=Certificate
+    tenant: "${GENEVA_TENANT}"
+    role_name: "${GENEVA_ROLE_NAME}"
+    role_instance: "${GENEVA_ROLE_INSTANCE}"
+    # For certificate auth (when auth_method=1):
+    cert_path: "${GENEVA_CERT_PATH}"
+    cert_password: "${GENEVA_CERT_PASSWORD}"
+
+    # Sending queue configuration (persistent queue with disk backup)
+    sending_queue:
+      enabled: true
+      num_consumers: 5       # Reduced workers to avoid overload
+      queue_size: 2000       # Reduced queue size
+      storage: file_storage  # Persist to disk (prevents data loss on crashes)
+
+    # Retry configuration (exponential backoff on export failures)
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s   # First retry after 5s
+      max_interval: 30s      # Max backoff interval
+      max_elapsed_time: 300s # Give up after 5 minutes
+
+    # Batch-level retry (retries individual failed batches without re-encoding)
+    batch_retry:
+      enabled: true          # Enable batch-level retry
+      max_retries: 3         # Max retry attempts per batch
+      initial_interval: 100ms # Initial backoff interval
+      max_interval: 5s       # Max backoff interval
+      multiplier: 2.0        # Backoff multiplier
+
+service:
+  extensions: [file_storage]  # Enable persistent queue extension
+
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [azuregigwarm]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [azuregigwarm]

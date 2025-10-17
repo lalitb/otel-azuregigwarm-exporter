@@ -1,0 +1,28 @@
+type: azuregigwarm
+
+status:
+  class: exporter
+  stability:
+    alpha: [traces, logs]
+  distributions: []
+  codeowners:
+    active: []
+
+scope_name: github.com/open-telemetry/opentelemetry-collector-contrib/exporter/azuregigwarmexporter
+
+resource_attributes:
+
+attributes:
+
+tests:
+  config:
+    endpoint: "https://gcs.ppe.monitoring.core.windows.net"
+    environment: "Test"
+    account: "TestAccount"
+    namespace: "TestNamespace"
+    region: "eastus"
+    tenant: "test-tenant-id"
+    role_name: "test-role"
+    role_instance: "test-instance"
+    config_major_version: 1
+    auth_method: 0

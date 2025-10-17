@@ -1,0 +1,16 @@
+[package]
+name = "geneva-ffi-bridge"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+# Use local geneva-uploader-ffi instead of crates.io
+geneva-uploader-ffi = { path = "/private/tmp/test/opentelemetry-rust-contrib/opentelemetry-exporter-geneva/geneva-uploader-ffi" }
+
+[features]
+default = []
+mock_auth = ["geneva-uploader-ffi/mock_auth"]
+

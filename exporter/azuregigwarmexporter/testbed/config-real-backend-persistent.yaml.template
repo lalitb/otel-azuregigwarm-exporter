@@ -1,0 +1,86 @@
+# High-Reliability Azure Geneva Backend Configuration Template with Persistent Storage
+# This configuration provides maximum resilience against data loss using:
+# - Persistent queue (Write-Ahead Log to disk)
+# - Two-level retry (batch + export)
+# - Large queue capacity
+#
+# Use this for production deployments where data loss is unacceptable.
+#
+# Copy this file to config-real-backend-persistent.yaml and fill in your actual values
+# DO NOT commit config-real-backend-persistent.yaml - it contains sensitive information
+
+extensions:
+  # File storage extension provides persistent queue (WAL)
+  file_storage:
+    directory: ${OTEL_FILE_STORAGE_DIR:-./storage}  # Directory for persistent queue
+    timeout: 10s                                     # Timeout for file operations
+    compaction:
+      directory: ${OTEL_FILE_STORAGE_DIR:-./storage}
+      on_start: true                                 # Clean up old data on startup
+      on_rebound: true                               # Compact when queue shrinks
+      rebound_needed_threshold_mib: 5                # Trigger compaction at 5MB
+      rebound_trigger_threshold_mib: 10              # Must have 10MB to compact
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    send_batch_size: 1024
+    timeout: 2s
+
+exporters:
+  azuregigwarm:
+    endpoint: "${GENEVA_ENDPOINT}"
+    environment: "${GENEVA_ENVIRONMENT}"
+    account: "${GENEVA_ACCOUNT}"
+    namespace: "${GENEVA_NAMESPACE}"
+    region: "${GENEVA_REGION}"
+    config_major_version: ${GENEVA_CONFIG_VERSION:-1}
+    auth_method: ${GENEVA_AUTH_METHOD:-0}  # 0=MSI, 1=Certificate
+    tenant: "${GENEVA_TENANT}"
+    role_name: "${GENEVA_ROLE_NAME}"
+    role_instance: "${GENEVA_ROLE_INSTANCE}"
+    # For certificate auth (when auth_method=1):
+    cert_path: "${GENEVA_CERT_PATH}"
+    cert_password: "${GENEVA_CERT_PASSWORD}"
+
+    # Persistent queue configuration (survives collector crashes)
+    sending_queue:
+      enabled: true
+      num_consumers: 20         # More workers for faster recovery
+      queue_size: 10000         # Large queue (10K batches)
+      storage: file_storage     # *** PERSIST TO DISK ***
+
+    # Export-level retry configuration (exponential backoff on export failures)
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s      # First retry after 5s
+      max_interval: 30s         # Max backoff interval
+      max_elapsed_time: 600s    # Give up after 10 minutes (extended)
+
+    # Batch-level retry (retries individual failed batches without re-encoding)
+    batch_retry:
+      enabled: true             # Enable batch-level retry
+      max_retries: 5            # More retries for production
+      initial_interval: 100ms   # Initial backoff interval
+      max_interval: 5s          # Max backoff interval
+      multiplier: 2.0           # Backoff multiplier
+
+service:
+  extensions: [file_storage]  # *** ENABLE FILE STORAGE EXTENSION ***
+
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [azuregigwarm]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [azuregigwarm]

@@ -1,0 +1,21 @@
+# Environment files with credentials
+.env
+
+# Generated config files
+config-real-backend.yaml
+
+# Collector logs
+collector.log
+*.log
+
+# Test results
+tests/results/
+results/
+
+# Go test cache
+*.test
+*.out
+
+# OS files
+.DS_Store
+Thumbs.db
