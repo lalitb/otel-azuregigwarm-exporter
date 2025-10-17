@@ -349,5 +349,4 @@ For issues and questions:
 ## References
 
 - [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/)
-- [Azure Monitor Geneva](https://eng.ms/docs/products/geneva)
 - [OTLP Specification](https://github.com/open-telemetry/opentelemetry-proto)
