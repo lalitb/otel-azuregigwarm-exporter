@@ -32,6 +32,16 @@ cd examples
 # Check prerequisites
 make check-prereqs
 
+# Configure your Geneva account (IMPORTANT!)
+# Edit config.yaml and replace these values:
+#   - endpoint: "https://abc.monitoring.core.windows.net"
+#   - account: "YourGenevaAccount"
+#   - namespace: "YourGenevaNamespace"
+#   - tenant: "your-tenant-id"
+#   - region: "eastus" (or your region)
+#   - auth_method, cert_path, workload_identity_resource, etc.
+vim config.yaml  # or use your preferred editor
+
 # Build everything (Rust FFI + Collector with static linking)
 make build
 
@@ -41,6 +51,12 @@ make run
 # In another terminal, send test data
 make test
 ```
+
+**Important:** Before running, edit `config.yaml` to configure:
+- Geneva endpoint (PPE or Production)
+- Account and namespace
+- Tenant ID and region
+- Authentication method (MSI/Certificate/Workload Identity)
 
 **That's it!** The Makefile handles:
 - ✅ Building Rust FFI bridge with static linking
@@ -68,7 +84,14 @@ Alternatively, use the build script:
 
 ```bash
 cd examples
+
+# Edit config.yaml first (IMPORTANT!)
+vim config.yaml  # Configure your Geneva account details
+
+# Build
 ./build.sh
+
+# Run
 ./bin/otelcol-azuregigwarm --config config.yaml
 ```
 
@@ -112,20 +135,25 @@ The collector binary now includes the Rust library **statically** - no runtime d
 
 ### Step 3: Configure the Exporter
 
-Edit `config.yaml` and update the following fields:
+Edit `config.yaml` and update the following fields with your actual values:
 
 ```yaml
 exporters:
   azuregigwarm:
-    # Geneva endpoint (use .prod. for production, .ppe. for pre-production)
-    endpoint: "https://gcs.ppe.monitoring.core.windows.net"
+    # Geneva endpoint - REPLACE with your environment
+    endpoint: "https://gcs.ppe.monitoring.core.windows.net"  # PPE
+    # endpoint: "https://gcs.prod.monitoring.core.windows.net"  # Production
 
-    # Your Geneva account details
-    account: "YourGenevaAccount"           # Replace with your account
-    namespace: "YourGenevaNamespace"       # Replace with your namespace
+    # Environment - REPLACE as needed
+    environment: "Test"  # or "Production", "Staging", etc.
 
-    # Azure tenant ID
-    tenant: "your-tenant-id"               # Replace with your Azure AD tenant ID
+    # Your Geneva account details - REPLACE these
+    account: "YourGenevaAccount"           # e.g., "PipelineAgent2Demo"
+    namespace: "YourGenevaNamespace"       # e.g., "PAdemo2"
+    region: "eastus"                       # e.g., "eastus", "westus2", etc.
+
+    # Azure tenant ID - REPLACE with your tenant
+    tenant: "your-tenant-id"               # e.g., "72f988bf-86f1-41af-91ab-2d7cd011db47"
 
     # Authentication method
     auth_method: 2  # 0=MSI, 1=Certificate, 2=WorkloadIdentity
