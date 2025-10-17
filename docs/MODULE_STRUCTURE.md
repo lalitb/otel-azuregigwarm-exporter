@@ -7,11 +7,15 @@ This document explains the structure of the `otel-azuregigwarm-exporter` standal
 ```
 otel-azuregigwarm-exporter/
 ├── README.md                           # 📖 Main module documentation
-├── QUICK_START.md                      # 🚀 5-minute quick start guide
-├── TESTING.md                          # 🧪 Comprehensive testing guide
-├── MODULE_STRUCTURE.md                 # 📋 This file
+├── LICENSE                             # ⚖️ Apache 2.0 license
 ├── .gitignore                          # 🚫 Git ignore rules
 ├── go.mod                              # 📦 Root module definition
+│
+├── docs/                               # 📚 Documentation
+│   ├── QUICK_START.md                  # 🚀 5-minute quick start guide
+│   ├── TESTING.md                      # 🧪 Comprehensive testing guide
+│   ├── MODULE_STRUCTURE.md             # 📋 This file
+│   └── AKS_DEPLOYMENT.md               # ☸️ AKS deployment guide
 │
 ├── exporter/
 │   └── azuregigwarmexporter/           # Main exporter package
@@ -69,7 +73,7 @@ otel-azuregigwarm-exporter/
    - Build steps
    - Quick test
 
-2. **Then read:** [README.md](README.md)
+2. **Then read:** [../README.md](../README.md)
    - Complete documentation
    - All configuration options
    - Authentication methods
@@ -81,21 +85,26 @@ otel-azuregigwarm-exporter/
    - Load testing
    - Troubleshooting
 
+4. **For AKS deployment:** [AKS_DEPLOYMENT.md](AKS_DEPLOYMENT.md)
+   - Workload Identity setup
+   - Kubernetes manifests
+   - Complete deployment guide
+
 ### For Developers
 
-1. **Exporter code:** [exporter/azuregigwarmexporter/](exporter/azuregigwarmexporter/)
-   - Start with [exporter/azuregigwarmexporter/README.md](exporter/azuregigwarmexporter/README.md)
+1. **Exporter code:** [../exporter/azuregigwarmexporter/](../exporter/azuregigwarmexporter/)
+   - Start with [../exporter/azuregigwarmexporter/README.md](../exporter/azuregigwarmexporter/README.md)
    - Configuration: `config.go`
    - Logs implementation: `logsexporter.go`
    - Traces implementation: `tracesexporter.go`
 
-2. **FFI Bridge:** [exporter/azuregigwarmexporter/internal/cgo/](exporter/azuregigwarmexporter/internal/cgo/)
+2. **FFI Bridge:** [../exporter/azuregigwarmexporter/internal/cgo/](../exporter/azuregigwarmexporter/internal/cgo/)
    - Go side: `geneva_ffi.go`
    - C helpers: `c_helpers.c`
    - Headers: `headers/*.h`
 
-3. **Rust implementation:** [exporter/azuregigwarmexporter/geneva_ffi_bridge/](exporter/azuregigwarmexporter/geneva_ffi_bridge/)
-   - Start with [geneva_ffi_bridge/README.md](exporter/azuregigwarmexporter/geneva_ffi_bridge/README.md)
+3. **Rust implementation:** [../exporter/azuregigwarmexporter/geneva_ffi_bridge/](../exporter/azuregigwarmexporter/geneva_ffi_bridge/)
+   - Start with [../exporter/azuregigwarmexporter/geneva_ffi_bridge/README.md](../exporter/azuregigwarmexporter/geneva_ffi_bridge/README.md)
    - Implementation: `src/lib.rs`
 
 ## Module Publishing
@@ -306,14 +315,14 @@ cargo test
 
 ## Support & Contributing
 
-- 📖 Read the [README.md](README.md) for usage
+- 📖 Read the [README.md](../README.md) for usage
 - 🐛 Report issues on GitHub Issues
 - 💬 For questions, open a GitHub Discussion
 - 🤝 For contributions, open a Pull Request
 
 ## License
 
-Apache License 2.0 - See [LICENSE](LICENSE)
+Apache License 2.0 - See [LICENSE](../LICENSE)
 
 ## Links
 

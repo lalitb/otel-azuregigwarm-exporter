@@ -242,7 +242,7 @@ curl -X POST http://localhost:4318/v1/traces \
 
 For a complete guide on deploying this exporter to AKS with Azure Workload Identity authentication, see:
 
-**📘 [AKS_DEPLOYMENT.md](AKS_DEPLOYMENT.md)**
+**📘 [AKS_DEPLOYMENT.md](docs/AKS_DEPLOYMENT.md)**
 
 The guide covers:
 - Setting up Workload Identity on AKS

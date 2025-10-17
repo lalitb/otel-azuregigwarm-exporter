@@ -279,7 +279,7 @@ The Rust FFI library is statically linked by default, so no additional runtime d
 
 ## Testing
 
-See [../../TESTING.md](../../TESTING.md) for comprehensive testing guide.
+See [../../docs/TESTING.md](../../docs/TESTING.md) for comprehensive testing guide.
 
 ### Quick Test
 
@@ -350,8 +350,8 @@ For certificate authentication:
 ## Documentation
 
 - **[Root README](../../README.md)** - Complete module documentation
-- **[Quick Start Guide](../../QUICK_START.md)** - Get started in 5 minutes
-- **[Testing Guide](../../TESTING.md)** - Comprehensive testing documentation
+- **[Quick Start Guide](../../docs/QUICK_START.md)** - Get started in 5 minutes
+- **[Testing Guide](../../docs/TESTING.md)** - Comprehensive testing documentation
 - **[Example Configurations](../../examples/)** - Sample configs and test scripts
 
 ## References
