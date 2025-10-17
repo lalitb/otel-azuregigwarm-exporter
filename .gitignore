@@ -41,6 +41,7 @@ test-collector/
 
 # Credentials and secrets
 config.yaml
+!config.yaml.example
 *.p12
 *.pfx
 *.pem

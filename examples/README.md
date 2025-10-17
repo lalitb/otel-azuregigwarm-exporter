@@ -9,7 +9,7 @@ This directory contains examples and helper scripts to get started with the Azur
 | `Makefile` | Automated build and test targets |
 | `build.sh` | Build script with static linking |
 | `builder-config.yaml` | OpenTelemetry Collector Builder configuration |
-| `config.yaml` | Example collector configuration with Azure GigWarm exporter |
+| `config.yaml.example` | Example collector configuration (copy to config.yaml and customize) |
 | `send-test-logs.sh` | Bash script to send test logs to the collector |
 | `send-test-traces.sh` | Bash script to send test traces to the collector |
 | `test-logs.json` | Sample OTLP log payload |
@@ -41,14 +41,15 @@ cd examples
 make check-prereqs
 
 # Configure your Geneva account (IMPORTANT!)
-# Edit config.yaml and replace these values:
+# Copy the example config and edit with your actual values:
+cp config.yaml.example config.yaml
+vim config.yaml  # Replace these values:
 #   - endpoint: "https://abc.monitoring.core.windows.net"
 #   - account: "YourGenevaAccount"
 #   - namespace: "YourGenevaNamespace"
 #   - tenant: "your-tenant-id"
 #   - region: "eastus" (or your region)
 #   - auth_method, cert_path, workload_identity_resource, etc.
-vim config.yaml  # or use your preferred editor
 
 # Build everything (Rust FFI + Collector with static linking)
 make build
@@ -93,7 +94,8 @@ Alternatively, use the build script:
 ```bash
 cd examples
 
-# Edit config.yaml first (IMPORTANT!)
+# Copy and configure config (IMPORTANT!)
+cp config.yaml.example config.yaml
 vim config.yaml  # Configure your Geneva account details
 
 # Build

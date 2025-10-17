@@ -1,0 +1,87 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 10s
+    send_batch_size: 1024
+
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+
+exporters:
+  # Debug exporter for local testing
+  debug:
+    verbosity: detailed
+
+  # Azure GigWarm exporter configuration
+  azuregigwarm:
+    # Geneva endpoint - REPLACE with your environment
+    endpoint: "https://abc.monitoring.core.windows.net"
+
+    # Environment configuration - REPLACE as needed
+    environment: "Test"
+    account: "YourGenevaAccount"
+    namespace: "YourGenevaNamespace"
+    region: "eastus"
+    config_major_version: 2
+
+    # Identity configuration - REPLACE with your values
+    tenant: "your-tenant-id"
+    role_name: "your-role"
+    role_instance: "instance-1"
+
+    # Authentication method: 0 = System MSI, 1 = Certificate, 2 = Workload Identity
+    auth_method: 2
+
+    # Certificate authentication (when auth_method = 1)
+    # cert_path: "/path/to/certificate.p12"
+    # cert_password: "your-password"
+
+    # Workload Identity (when auth_method = 2)
+    workload_identity_resource: "https://abc.monitoring.core.windows.net"
+
+    # Queue configuration (optional)
+    sending_queue:
+      enabled: true
+      num_consumers: 10
+      queue_size: 1000
+
+    # Retry configuration (optional)
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 300s
+
+    # Batch retry configuration (optional)
+    batch_retry:
+      enabled: true
+      max_retries: 3
+      initial_interval: 100ms
+      max_interval: 5s
+      multiplier: 2.0
+
+extensions:
+  # Health check extension for Kubernetes liveness/readiness probes
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+service:
+  extensions: [health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [debug, azuregigwarm]
+
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [debug, azuregigwarm]
