@@ -336,10 +336,6 @@ For local development and testing before publishing:
 go mod edit -replace github.com/open-telemetry/otel-azuregigwarm-exporter=/path/to/local/otel-azuregigwarm-exporter
 ```
 
-## License
-
-Apache License 2.0
-
 ## Contributing
 
 Contributions are welcome! Please open an issue or pull request.
