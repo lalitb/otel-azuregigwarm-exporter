@@ -52,8 +52,8 @@ cd ../../..
 ```yaml
 exporters:
   azuregigwarm:
-    endpoint: "https://gcs.prod.monitoring.core.windows.net"
-    environment: "Production"
+    endpoint: "https://abc.windows.net"
+    environment: "Production" or "Test" or ...
     account: "YourAccount"
     namespace: "YourNamespace"
     region: "eastus"
@@ -336,10 +336,6 @@ For local development and testing before publishing:
 go mod edit -replace github.com/open-telemetry/otel-azuregigwarm-exporter=/path/to/local/otel-azuregigwarm-exporter
 ```
 
-## License
-
-Apache License 2.0
-
 ## Contributing
 
 Contributions are welcome! Please open an issue or pull request.
@@ -353,5 +349,4 @@ For issues and questions:
 ## References
 
 - [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/)
-- [Azure Monitor Geneva](https://eng.ms/docs/products/geneva)
 - [OTLP Specification](https://github.com/open-telemetry/opentelemetry-proto)
