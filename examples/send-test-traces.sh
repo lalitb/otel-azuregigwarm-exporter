@@ -11,8 +11,14 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TRACE_ID=$(openssl rand -hex 16)
 SPAN_ID=$(openssl rand -hex 8)
 
-# Get current timestamp in nanoseconds
-START_TIME=$(date +%s%N)
+# Get current timestamp in nanoseconds (works on Linux and macOS)
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS doesn't support %N, use seconds and add zeros
+    START_TIME=$(date +%s)000000000
+else
+    # Linux supports nanoseconds
+    START_TIME=$(date +%s%N)
+fi
 END_TIME=$((START_TIME + 1000000000))  # 1 second duration
 
 # Read the template and replace placeholders
@@ -31,8 +37,8 @@ RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "${COLLECTOR_URL}/v1/traces" \
     -H "Content-Type: application/json" \
     -d "$PAYLOAD")
 
-HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-BODY=$(echo "$RESPONSE" | head -n-1)
+HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)
+BODY=$(echo "$RESPONSE" | sed '$d')
 
 if [ "$HTTP_CODE" = "200" ]; then
     echo "✓ Trace sent successfully!"

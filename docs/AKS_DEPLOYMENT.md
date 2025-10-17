@@ -129,27 +129,27 @@ az identity federated-credential list \
 
 ### 6.1 Build on AMD64 Linux (Required)
 
-The Rust FFI library must be built for Linux AMD64. If you're on macOS/Windows, use a Linux VM:
+The collector must be built for Linux AMD64. If you're on macOS/Windows, use a Linux VM:
 
 ```bash
 # On Linux AMD64 VM or machine
 
-# Build Rust FFI library
-cd opentelemetry-rust-contrib
-cargo build --release -p geneva-uploader-ffi
+# Clone your exporter repository
+git clone https://github.com/your-org/otel-azuregigwarm-exporter.git
+cd otel-azuregigwarm-exporter/examples
 
-# Copy to expected location
-mkdir -p /tmp/opentelemetry-rust-contrib/target/release
-cp target/release/libgeneva_uploader_ffi.so /tmp/opentelemetry-rust-contrib/target/release/
+# Build using the Makefile (handles Rust FFI from crates.io automatically)
+make build
 
-# Build Go collector
-cd ~/opentelemetry-collector-contrib/cmd/otelcontribcol
-export CGO_ENABLED=1
-export CGO_LDFLAGS="-L/tmp/opentelemetry-rust-contrib/target/release"
-go build -o ~/otelcontribcol_linux_amd64 .
+# The binary is now at: ./bin/otelcol-azuregigwarm
+cp ./bin/otelcol-azuregigwarm ~/otelcontribcol_linux_amd64
 ```
 
+**Note:** The Rust FFI bridge is now built from **crates.io** (geneva-uploader-ffi v0.3.0) - no need to clone opentelemetry-rust-contrib!
+
 ### 6.2 Create Dockerfile
+
+With static linking, the Dockerfile is much simpler:
 
 ```dockerfile
 FROM ubuntu:22.04
@@ -159,14 +159,8 @@ RUN apt-get update && \
     apt-get install -y ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy Rust FFI library
-COPY opentelemetry-rust-contrib/target/release/libgeneva_uploader_ffi.so /usr/local/lib/
-
-# Copy collector binary
+# Copy the statically-linked collector binary (includes Rust FFI)
 COPY otelcontribcol_linux_amd64 /otelcontribcol
-
-# Update linker cache
-RUN ldconfig
 
 # Make executable
 RUN chmod +x /otelcontribcol
@@ -175,6 +169,8 @@ RUN chmod +x /otelcontribcol
 ENTRYPOINT ["/otelcontribcol"]
 CMD ["--config=/etc/otel/config.yaml"]
 ```
+
+**Note:** No need to copy separate Rust library or run `ldconfig` - the binary is statically linked!
 
 ### 6.3 Build and Push
 

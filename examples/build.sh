@@ -48,7 +48,11 @@ cargo build --release
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}✓ Rust library built successfully${NC}"
     echo -e "  Static library: ${SCRIPT_DIR}/${RUST_FFI_DIR}/target/release/libgeneva_ffi_bridge.a"
-    echo -e "  Dynamic library: ${SCRIPT_DIR}/${RUST_FFI_DIR}/target/release/libgeneva_ffi_bridge.so"
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        echo -e "  Dynamic library: ${SCRIPT_DIR}/${RUST_FFI_DIR}/target/release/libgeneva_ffi_bridge.dylib"
+    else
+        echo -e "  Dynamic library: ${SCRIPT_DIR}/${RUST_FFI_DIR}/target/release/libgeneva_ffi_bridge.so"
+    fi
 else
     echo -e "${RED}❌ Rust build failed${NC}"
     exit 1
