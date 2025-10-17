@@ -7,8 +7,7 @@ edition = "2021"
 crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
-# Use local geneva-uploader-ffi instead of crates.io
-geneva-uploader-ffi = { path = "/private/tmp/test/opentelemetry-rust-contrib/opentelemetry-exporter-geneva/geneva-uploader-ffi" }
+geneva-uploader-ffi = "0.3.0"
 
 [features]
 default = []
