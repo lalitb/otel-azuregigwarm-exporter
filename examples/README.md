@@ -149,25 +149,24 @@ Edit `config.yaml` and update the following fields with your actual values:
 exporters:
   azuregigwarm:
     # Geneva endpoint - REPLACE with your environment
-    endpoint: "https://gcs.ppe.monitoring.core.windows.net"  # PPE
-    # endpoint: "https://gcs.prod.monitoring.core.windows.net"  # Production
+    endpoint: "https://abc.monitoring.core.windows.net"
 
     # Environment - REPLACE as needed
     environment: "Test"  # or "Production", "Staging", etc.
 
     # Your Geneva account details - REPLACE these
-    account: "YourGenevaAccount"           # e.g., "PipelineAgent2Demo"
-    namespace: "YourGenevaNamespace"       # e.g., "PAdemo2"
-    region: "eastus"                       # e.g., "eastus", "westus2", etc.
+    account: "YourGenevaAccount"
+    namespace: "YourGenevaNamespace"
+    region: "eastus"
 
     # Azure tenant ID - REPLACE with your tenant
-    tenant: "your-tenant-id"               # e.g., "72f988bf-86f1-41af-91ab-2d7cd011db47"
+    tenant: "your-tenant-id"
 
     # Authentication method
     auth_method: 2  # 0=MSI, 1=Certificate, 2=WorkloadIdentity
 
     # For Workload Identity (auth_method=2)
-    workload_identity_resource: "https://gcs.ppe.monitoring.core.windows.net"
+    workload_identity_resource: "https://abc.monitoring.core.windows.net"
 
     # For Certificate (auth_method=1)
     # cert_path: "/path/to/certificate.p12"
@@ -205,7 +204,7 @@ You should see:
 ```
 Starting otelcontribcol...
 Starting extensions...
-Starting AzureGigWarm exporter endpoint=https://gcs.ppe.monitoring.core.windows.net
+Starting AzureGigWarm exporter endpoint=https://abc.monitoring.core.windows.net
 Starting GRPC server endpoint=[::]:4317
 Starting HTTP server endpoint=[::]:4318
 Everything is ready. Begin running and processing data.
@@ -352,7 +351,7 @@ For high-volume telemetry:
 ```yaml
 exporters:
   azuregigwarm:
-    endpoint: "https://gcs.prod.monitoring.core.windows.net"
+    endpoint: "https://abc.monitoring.core.windows.net"
     # ... other config ...
 
     sending_queue:
@@ -422,9 +421,9 @@ service:
 ```yaml
 exporters:
   azuregigwarm:
-    endpoint: "https://gcs.ppe.monitoring.core.windows.net"
+    endpoint: "https://abc.monitoring.core.windows.net"
     environment: "Test"
-    workload_identity_resource: "https://gcs.ppe.monitoring.core.windows.net"
+    workload_identity_resource: "https://abc.monitoring.core.windows.net"
 ```
 
 ### Production Environment
@@ -432,9 +431,9 @@ exporters:
 ```yaml
 exporters:
   azuregigwarm:
-    endpoint: "https://gcs.prod.monitoring.core.windows.net"
+    endpoint: "https://abc.monitoring.core.windows.net"
     environment: "Production"
-    workload_identity_resource: "https://gcs.prod.monitoring.core.windows.net"
+    workload_identity_resource: "https://abc.monitoring.core.windows.net"
 ```
 
 ## Troubleshooting
