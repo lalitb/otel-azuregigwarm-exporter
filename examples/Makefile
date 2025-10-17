@@ -69,13 +69,18 @@ install-tools:
 	@echo "Installing OpenTelemetry Collector Builder..."
 	go install go.opentelemetry.io/collector/cmd/builder@latest
 	@echo "✓ Tools installed"
+	@echo ""
+	@echo "⚠️  If 'builder' is still not found, add Go bin to your PATH:"
+	@echo "   export PATH=\$$HOME/go/bin:\$$PATH"
+	@echo "   Or add to ~/.bashrc for permanent:"
+	@echo "   echo 'export PATH=\$$HOME/go/bin:\$$PATH' >> ~/.bashrc"
 
 # Check prerequisites
 check-prereqs:
 	@echo "🔍 Checking prerequisites..."
 	@command -v cargo >/dev/null 2>&1 || (echo "❌ Rust not found. Install from https://rustup.rs" && exit 1)
 	@command -v go >/dev/null 2>&1 || (echo "❌ Go not found. Install from https://go.dev" && exit 1)
-	@command -v builder >/dev/null 2>&1 || (echo "⚠️  builder not found. Run 'make install-tools'" && exit 1)
+	@command -v builder >/dev/null 2>&1 || (echo "⚠️  builder not found. Run 'make install-tools'" && echo "   Then ensure \$$HOME/go/bin is in your PATH: export PATH=\$$HOME/go/bin:\$$PATH" && exit 1)
 	@echo "✓ All prerequisites met"
 
 # Rebuild from scratch

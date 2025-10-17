@@ -243,7 +243,12 @@ data:
           max_interval: 5s
           multiplier: 2.0
 
+    extensions:
+      health_check:
+        endpoint: 0.0.0.0:13133
+
     service:
+      extensions: [health_check]
       pipelines:
         logs:
           receivers: [otlp]
@@ -432,17 +437,52 @@ EOFDATA
 '
 ```
 
+### Send Test Trace
+
+```bash
+kubectl run test-traces --image=curlimages/curl --rm -it --restart=Never -- sh -c 'curl -X POST http://otel-collector.otel-system:4318/v1/traces -H "Content-Type: application/json" -d @- << "EOFDATA"
+{
+  "resourceSpans": [{
+    "scopeSpans": [{
+      "spans": [{
+        "traceId": "'$(openssl rand -hex 16)'",
+        "spanId": "'$(openssl rand -hex 8)'",
+        "name": "test-span-aks",
+        "kind": 1,
+        "startTimeUnixNano": "'$(date +%s)000000000'",
+        "endTimeUnixNano": "'$(expr $(date +%s) + 1)000000000'",
+        "attributes": [{
+          "key": "test.source",
+          "value": {"stringValue": "aks-manual-test"}
+        }]
+      }]
+    }]
+  }]
+}
+EOFDATA
+'
+```
+
 ### Check Upload Success
 
 ```bash
 kubectl logs -n otel-system deployment/otel-collector --tail=20
 ```
 
-Expected output (success):
+Expected output for logs (success):
 ```
 pushLogs called log_record_count=1
 Marshaled logs to protobuf data_size=58
 Encoded logs into batches batch_count=1
+Sending upload request to URL: "https://eastus-shared.ppe.warm.ingest.monitor.core.windows.net/..."
+Upload Successful
+```
+
+Expected output for traces (success):
+```
+pushTraces called span_count=1
+Marshaled traces to protobuf data_size=125
+Encoded traces into batches batch_count=1
 Sending upload request to URL: "https://eastus-shared.ppe.warm.ingest.monitor.core.windows.net/..."
 Upload Successful
 ```

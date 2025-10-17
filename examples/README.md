@@ -22,6 +22,14 @@ This directory contains examples and helper scripts to get started with the Azur
 - Go 1.21+ installed
 - Rust toolchain installed
 - Make utility
+- `$HOME/go/bin` in your PATH (for the `builder` tool)
+
+**Note:** After installing Go tools, ensure `$HOME/go/bin` is in your PATH:
+```bash
+export PATH=$HOME/go/bin:$PATH
+# Or add permanently to ~/.bashrc:
+echo 'export PATH=$HOME/go/bin:$PATH' >> ~/.bashrc
+```
 
 ### Build and Run
 
@@ -478,6 +486,26 @@ grep -i "error" collector.log
 # Look for upload messages
 grep -i "upload" collector.log
 ```
+
+### Kubernetes health probe failures
+
+**Error:** Pod in CrashLoopBackOff with health check failures
+
+**Cause:** Kubernetes liveness/readiness probes configured but `health_check` extension not enabled
+
+**Solution:** Add the health_check extension to your configuration:
+```yaml
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+service:
+  extensions: [health_check]
+  pipelines:
+    # ... your pipelines
+```
+
+This is already included in the example `config.yaml` and is required when deploying to Kubernetes with health probes.
 
 ## Performance Tips
 
