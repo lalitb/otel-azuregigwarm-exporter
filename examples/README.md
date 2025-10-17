@@ -58,7 +58,7 @@ make test-logs        # Send test logs only
 make test-traces      # Send test traces only
 make clean            # Clean build artifacts
 make rebuild          # Clean and rebuild from scratch
-make install-tools    # Install ocb if missing
+make install-tools    # Install builder if missing
 make help             # Show all available targets
 ```
 
@@ -105,7 +105,7 @@ go install go.opentelemetry.io/collector/cmd/builder@latest
 # Build with static linking (no library copying needed!)
 CGO_ENABLED=1 \
 CGO_LDFLAGS="-L../exporter/azuregigwarmexporter/geneva_ffi_bridge/target/release -lgeneva_ffi_bridge" \
-ocb --config builder-config.yaml
+builder --config builder-config.yaml
 ```
 
 The collector binary now includes the Rust library **statically** - no runtime dependencies!
@@ -418,7 +418,7 @@ Or manually:
 ```bash
 CGO_ENABLED=1 \
 CGO_LDFLAGS="-L../exporter/azuregigwarmexporter/geneva_ffi_bridge/target/release -lgeneva_ffi_bridge" \
-ocb --config builder-config.yaml
+builder --config builder-config.yaml
 ```
 
 **Note:** Using the Makefile or build.sh script automatically handles static linking, eliminating this issue.

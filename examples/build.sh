@@ -31,9 +31,9 @@ if ! command -v go &> /dev/null; then
     exit 1
 fi
 
-if ! command -v ocb &> /dev/null; then
-    echo -e "${YELLOW}⚠️  OpenTelemetry Collector Builder (ocb) not found.${NC}"
-    echo -e "Installing ocb..."
+if ! command -v builder &> /dev/null; then
+    echo -e "${YELLOW}⚠️  OpenTelemetry Collector Builder not found.${NC}"
+    echo -e "Installing builder..."
     go install go.opentelemetry.io/collector/cmd/builder@latest
 fi
 
@@ -62,7 +62,7 @@ echo -e "${BLUE}🔨 Building OpenTelemetry Collector with static linking...${NC
 export CGO_ENABLED=1
 export CGO_LDFLAGS="-L${SCRIPT_DIR}/${RUST_FFI_DIR}/target/release -lgeneva_ffi_bridge"
 
-ocb --config builder-config.yaml
+builder --config builder-config.yaml
 
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}✓ Collector built successfully${NC}"

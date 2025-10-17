@@ -30,7 +30,7 @@ build-collector: build-rust
 	@echo "🔨 Building OpenTelemetry Collector with static linking..."
 	CGO_ENABLED=1 \
 	CGO_LDFLAGS="-L$(RUST_LIB_DIR) -lgeneva_ffi_bridge" \
-	ocb --config builder-config.yaml
+	builder --config builder-config.yaml
 	@echo "✓ Collector built: $(COLLECTOR_BIN)"
 
 # Run the collector
@@ -75,7 +75,7 @@ check-prereqs:
 	@echo "🔍 Checking prerequisites..."
 	@command -v cargo >/dev/null 2>&1 || (echo "❌ Rust not found. Install from https://rustup.rs" && exit 1)
 	@command -v go >/dev/null 2>&1 || (echo "❌ Go not found. Install from https://go.dev" && exit 1)
-	@command -v ocb >/dev/null 2>&1 || (echo "⚠️  ocb not found. Run 'make install-tools'" && exit 1)
+	@command -v builder >/dev/null 2>&1 || (echo "⚠️  builder not found. Run 'make install-tools'" && exit 1)
 	@echo "✓ All prerequisites met"
 
 # Rebuild from scratch
@@ -96,7 +96,7 @@ help:
 	@echo "  make test-traces      - Send test traces only"
 	@echo "  make clean            - Clean build artifacts"
 	@echo "  make rebuild          - Clean and rebuild everything"
-	@echo "  make install-tools    - Install required tools (ocb)"
+	@echo "  make install-tools    - Install required tools (builder)"
 	@echo "  make check-prereqs    - Check if prerequisites are installed"
 	@echo "  make help             - Show this help message"
 	@echo ""
