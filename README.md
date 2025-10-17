@@ -145,43 +145,33 @@ exporters:
 
 ## Building a Collector with This Exporter
 
-### Step 1: Create builder-config.yaml
+For a complete working example with all configuration files and test scripts, see:
 
-```yaml
-dist:
-  name: otelcol-azuregigwarm
-  description: OpenTelemetry Collector with Azure GigWarm exporter
-  output_path: ./bin
+**📁 [examples/](examples/)** - Complete examples and helper scripts
 
-exporters:
-  - gomod: github.com/open-telemetry/otel-azuregigwarm-exporter/exporter/azuregigwarmexporter v0.1.0
-  - gomod: go.opentelemetry.io/collector/exporter/debugexporter v0.137.0
+**📘 [examples/README.md](examples/README.md)** - Detailed quick start guide
 
-receivers:
-  - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.137.0
+### Quick Build Steps
 
-processors:
-  - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.137.0
-```
+1. Build the Rust FFI bridge:
+   ```bash
+   cd exporter/azuregigwarmexporter/geneva_ffi_bridge
+   cargo build --release
+   ```
 
-### Step 2: Build the Rust FFI Bridge
+2. Use OpenTelemetry Collector Builder:
+   ```bash
+   ocb --config examples/builder-config.yaml
+   ```
 
-```bash
-cd exporter/azuregigwarmexporter/geneva_ffi_bridge
-cargo build --release
-cd ../../..
-```
+3. Run the collector:
+   ```bash
+   export CGO_ENABLED=1
+   export LD_LIBRARY_PATH=./exporter/azuregigwarmexporter/geneva_ffi_bridge/target/release
+   ./examples/bin/otelcol-azuregigwarm --config examples/config.yaml
+   ```
 
-### Step 3: Build the Collector
-
-```bash
-# Generate collector code
-ocb --config builder-config.yaml
-
-# Build with CGO enabled
-cd otelcol-azuregigwarm
-CGO_ENABLED=1 go build -o ../bin/otelcol-azuregigwarm .
-```
+See [examples/README.md](examples/README.md) for detailed instructions and troubleshooting.
 
 ## Testing
 
