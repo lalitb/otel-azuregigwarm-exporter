@@ -5,8 +5,9 @@ dist:
   otelcol_version: 0.137.0
 
 exporters:
-  # Azure GigWarm exporter
+  # Azure GigWarm exporter (local path for development)
   - gomod: github.com/open-telemetry/otel-azuregigwarm-exporter/exporter/azuregigwarmexporter v0.1.0
+    path: ../exporter/azuregigwarmexporter
 
   # Standard exporters
   - gomod: go.opentelemetry.io/collector/exporter/debugexporter v0.137.0
