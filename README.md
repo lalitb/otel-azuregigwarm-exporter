@@ -1,4 +1,4 @@
-# Azure GigWarm (Geneva Warm) Exporter for OpenTelemetry
+# Azure GIG/warm Exporter for OpenTelemetry Collector
 
 This exporter sends OpenTelemetry logs and traces to Azure Geneva Warm Path using a Rust FFI bridge.
 
