@@ -188,7 +188,7 @@ docker push <your-acr>.azurecr.io/otel-collector-geneva:v1.0.0
 ## Step 7: Create ConfigMap with Collector Configuration
 
 ```bash
-export GENEVA_ENDPOINT="https://gcs.ppe.monitoring.core.windows.net"  # or .prod. for production
+export GENEVA_ENDPOINT="https://abc.monitoring.core.windows.net"
 export GENEVA_ACCOUNT="YourGenevaAccount"
 export GENEVA_NAMESPACE="YourGenevaNamespace"
 export AZURE_TENANT_ID="your-tenant-id"
