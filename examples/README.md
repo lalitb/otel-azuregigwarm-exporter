@@ -281,7 +281,7 @@ For AKS with Workload Identity:
 exporters:
   azuregigwarm:
     auth_method: 2  # Workload Identity
-    workload_identity_resource: "https://monitor.core.windows.net/"
+    workload_identity_resource: "https://monitor.core.windows.net"
 ```
 
 See [AKS_DEPLOYMENT.md](../docs/AKS_DEPLOYMENT.md) for complete Kubernetes setup.

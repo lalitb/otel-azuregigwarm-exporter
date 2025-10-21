@@ -266,7 +266,7 @@ EOF
 | Parameter | Description | Example |
 |-----------|-------------|---------|
 | `endpoint` | Geneva GCS endpoint | `https://gcs.ppe.monitoring.core.windows.net` (PPE)<br>`https://gcs.prod.monitoring.core.windows.net` (Prod) |
-| `workload_identity_resource` | Token audience | `https://monitor.core.windows.net/` |
+| `workload_identity_resource` | Token audience | `https://monitor.core.windows.net` |
 | `auth_method` | Authentication type | `2` for Workload Identity |
 | `account` | Geneva account name | `PipelineAgent2Demo` |
 | `namespace` | Geneva namespace | `PAdemo2` |
