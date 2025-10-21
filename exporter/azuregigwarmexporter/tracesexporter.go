@@ -58,6 +58,12 @@ func newTracesExporter(_ context.Context, set exporter.Settings, cfg *Config) (*
 		cgoCfg.CertPassword = cfg.CertPassword
 	}
 
+    // Add workload identity resource if needed
+    if cfg.AuthMethod == WorkloadIdentity {
+        cgoCfg.WorkloadIdentityResource = cfg.WorkloadIdentityResource
+    }
+
+
 	client, err := cgogeneva.NewGenevaClient(cgoCfg)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Geneva FFI client: %w", err)
