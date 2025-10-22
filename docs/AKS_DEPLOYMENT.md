@@ -266,7 +266,7 @@ EOF
 | Parameter | Description | Example |
 |-----------|-------------|---------|
 | `endpoint` | Geneva GCS endpoint | `https://gcs.ppe.monitoring.core.windows.net` (PPE)<br>`https://gcs.prod.monitoring.core.windows.net` (Prod) |
-| `workload_identity_resource` | Token audience (should match endpoint) | Same as `endpoint` |
+| `workload_identity_resource` | Token audience | `https://monitor.core.windows.net` |
 | `auth_method` | Authentication type | `2` for Workload Identity |
 | `account` | Geneva account name | `PipelineAgent2Demo` |
 | `namespace` | Geneva namespace | `PAdemo2` |
@@ -518,7 +518,7 @@ geneva upload failed: AADSTS70011: The scope https://monitor.azure.com/ is not v
 3. Wrong OIDC issuer
 
 **Solutions:**
-- Set `workload_identity_resource` to match `endpoint` (e.g., `https://gcs.ppe.monitoring.core.windows.net`)
+- Set `workload_identity_resource` value (e.g., `https://monitor.core.windows.net`) corresponding to `endpoint` (e.g., `https://gcs.ppe.monitoring.core.windows.net`)
 - Verify federated credential subject: `az identity federated-credential list --identity-name otel-collector-identity --resource-group <rg>`
 - Ensure federated credential issuer matches AKS OIDC issuer
 

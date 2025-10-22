@@ -281,7 +281,7 @@ For AKS with Workload Identity:
 exporters:
   azuregigwarm:
     auth_method: 2  # Workload Identity
-    workload_identity_resource: "https://gcs.ppe.monitoring.core.windows.net"
+    workload_identity_resource: "https://monitor.core.windows.net"
 ```
 
 See [AKS_DEPLOYMENT.md](../docs/AKS_DEPLOYMENT.md) for complete Kubernetes setup.
@@ -465,7 +465,7 @@ builder --config builder-config.yaml
 **Error:** `AADSTS70011: The scope is not valid`
 
 **Solutions:**
-1. Ensure `workload_identity_resource` matches the `endpoint`
+1. Ensure `workload_identity_resource` value corresponding to the `endpoint`
 2. Verify managed identity is registered with Geneva
 3. Check federated credential configuration (for Workload Identity)
 
