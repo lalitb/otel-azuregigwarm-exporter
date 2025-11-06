@@ -111,7 +111,6 @@ func (e *tracesExporter) shutdown(_ context.Context) error {
 func (e *tracesExporter) pushTraces(ctx context.Context, td ptrace.Traces) error {
 	spanCount := td.SpanCount()
 
-	commonAttrs := e.getCommonAttributes()
 	traceAttrs := e.getTraceAttributes(td)
 
 	// Record that we received a trace request (once per pushTraces call)
@@ -263,15 +262,8 @@ func (e *tracesExporter) getTraceAttributes(td ptrace.Traces) []attribute.KeyVal
 
 // uploadBatchWithRetry uploads a single batch with exponential backoff retry
 func (e *tracesExporter) uploadBatchWithRetry(ctx context.Context, batches *cgogeneva.EncodedBatches, index int) error {
-	// Use basic attributes for batch metrics (without trace-specific data)
-	batchAttrs := []attribute.KeyValue{
-		attribute.String("exporter", "azuregigwarm"),
-		attribute.String("gigwarm_environment", e.cfg.Environment),
-		attribute.String("gigwarm_account", e.cfg.Account),
-		attribute.String("gigwarm_namespace", e.cfg.Namespace),
-		attribute.String("gigwarm_region", e.cfg.Region),
-		attribute.Int64("gigwarm_config_major_version", int64(e.cfg.ConfigMajorVersion)),
-	}
+	// Use common attributes for batch metrics (basic exporter attributes without trace-specific data)
+	batchAttrs := e.getCommonAttributes()
 
 	if !e.cfg.BatchRetryConfig.Enabled {
 		// Batch retry disabled, upload once
