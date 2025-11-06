@@ -109,7 +109,7 @@ func (e *logsExporter) shutdown(_ context.Context) error {
 func (e *logsExporter) pushLogs(ctx context.Context, ld plog.Logs) error {
 	logRecordCount := ld.LogRecordCount()
 
-	logAttrs := e.getLogAttributes(ld)
+	logAttrs := e.getCommonAttributes()
 
 	// Record that we received a log request (once per pushLogs call)
 	e.telemetry.recordLogsReceived(ctx, int64(logRecordCount), logAttrs...)
@@ -333,19 +333,6 @@ func (e *logsExporter) getCommonAttributes() []attribute.KeyValue {
 		attribute.String("gigwarm_region", e.cfg.Region),
 		attribute.Int64("gigwarm_config_major_version", int64(e.cfg.ConfigMajorVersion)),
 	}
-}
-
-// getLogAttributes returns attributes specific to a log payload
-func (e *logsExporter) getLogAttributes(ld plog.Logs) []attribute.KeyValue {
-	attrs := e.getCommonAttributes()
-
-	// Add log-specific attributes
-	attrs = append(attrs,
-		attribute.Int("log_records_count", ld.LogRecordCount()),
-		attribute.Int("resource_logs_count", ld.ResourceLogs().Len()),
-	)
-
-	return attrs
 }
 
 // These interface methods are no longer needed because exporterhelper wraps the exporter
