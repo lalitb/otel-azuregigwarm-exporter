@@ -110,6 +110,7 @@ func (e *tracesExporter) shutdown(_ context.Context) error {
 // pushTraces implements the push function for exporterhelper and sends traces via Rust FFI.
 func (e *tracesExporter) pushTraces(ctx context.Context, td ptrace.Traces) error {
 	spanCount := td.SpanCount()
+	
     commonAttrs := e.getCommonAttributes()
 	// Marshal to OTLP ExportTraceServiceRequest protobuf bytes
 	req := ptraceotlp.NewExportRequestFromTraces(td)
