@@ -118,7 +118,7 @@ func (e *tracesExporter) pushTraces(ctx context.Context, td ptrace.Traces) error
 	e.telemetry.recordTracesReceived(ctx, commonAttrs...)
 
 	// Record the number of spans received
-	e.telemetry.recordSpansReceived(ctx, int64(spanCount), traceAttrs...)
+	e.telemetry.recordSpansReceived(ctx, int64(spanCount), commonAttrs...)
 
 	// Marshal to OTLP ExportTraceServiceRequest protobuf bytes
 	req := ptraceotlp.NewExportRequestFromTraces(td)
@@ -232,11 +232,11 @@ func (e *tracesExporter) uploadBatchesWithRetry(ctx context.Context, batches *cg
 func (e *tracesExporter) getCommonAttributes() []attribute.KeyValue {
 	return []attribute.KeyValue{
 		attribute.String("exporter", "azuregigwarm"),
-		attribute.String("endpoint", e.cfg.Endpoint),
-		attribute.String("account", e.cfg.Account),
-		attribute.String("namespace", e.cfg.Namespace),
-		attribute.String("region", e.cfg.Region),
-		attribute.String("environment", e.cfg.Environment),
+		attribute.String("gigwarm_environment", e.cfg.Environment),
+		attribute.String("gigwarm_account", e.cfg.Account),
+		attribute.String("gigwarm_namespace", e.cfg.Namespace),
+		attribute.String("gigwarm_region", e.cfg.Region),
+		attribute.Int("gigwarm_config_major_version", e.cfg.ConfigMajorVersion),
 	}
 }
 
