@@ -110,8 +110,16 @@ func (e *tracesExporter) shutdown(_ context.Context) error {
 // pushTraces implements the push function for exporterhelper and sends traces via Rust FFI.
 func (e *tracesExporter) pushTraces(ctx context.Context, td ptrace.Traces) error {
 	spanCount := td.SpanCount()
-	
-    commonAttrs := e.getCommonAttributes()
+
+	commonAttrs := e.getCommonAttributes()
+	traceAttrs := e.getTraceAttributes(td)
+
+	// Record that we received a trace request
+	e.telemetry.recordTracesReceived(ctx, commonAttrs...)
+
+	// Record the number of spans received
+	e.telemetry.recordSpansReceived(ctx, int64(spanCount), traceAttrs...)
+
 	// Marshal to OTLP ExportTraceServiceRequest protobuf bytes
 	req := ptraceotlp.NewExportRequestFromTraces(td)
 	data, err := req.MarshalProto()
@@ -120,6 +128,12 @@ func (e *tracesExporter) pushTraces(ctx context.Context, td ptrace.Traces) error
 		e.telemetry.recordSpansExportError(ctx, int64(spanCount), append(commonAttrs,
 			attribute.String("error", "marshal_failed"),
 			attribute.String("phase", "encoding"))...)
+
+		// Record trace export failure
+		e.telemetry.recordTracesExportError(ctx, append(traceAttrs,
+			attribute.String("error", "marshal_failed"),
+			attribute.String("phase", "encoding"))...)
+
 		return fmt.Errorf("failed to marshal traces to protobuf: %w", err)
 	}
 
@@ -129,6 +143,11 @@ func (e *tracesExporter) pushTraces(ctx context.Context, td ptrace.Traces) error
 		e.logger.Error("Failed to encode spans for Geneva Warm", zap.Error(err))
 		// Record failure
 		e.telemetry.recordSpansExportError(ctx, int64(spanCount), append(commonAttrs,
+			attribute.String("error", "encoding_failed"),
+			attribute.String("phase", "encoding"))...)
+
+		// Record trace export failure
+		e.telemetry.recordTracesExportError(ctx, append(traceAttrs,
 			attribute.String("error", "encoding_failed"),
 			attribute.String("phase", "encoding"))...)
 
@@ -145,11 +164,19 @@ func (e *tracesExporter) pushTraces(ctx context.Context, td ptrace.Traces) error
 			attribute.String("error", "upload_failed"),
 			attribute.String("phase", "upload"))...)
 
+		// Record trace export failure
+		e.telemetry.recordTracesExportError(ctx, append(traceAttrs,
+			attribute.String("error", "upload_failed"),
+			attribute.String("phase", "upload"))...)
+
 		return err
 	}
 
 	// Record success
 	e.telemetry.recordSpansExported(ctx, int64(spanCount), commonAttrs...)
+
+	// Record trace export success
+	e.telemetry.recordTracesExported(ctx, traceAttrs...)
 
 	e.logger.Debug("Successfully uploaded spans to Geneva Warm",
 		zap.Int("span_count", spanCount),
@@ -204,11 +231,26 @@ func (e *tracesExporter) uploadBatchesWithRetry(ctx context.Context, batches *cg
 // getCommonAttributes returns the common telemetry attributes for this exporter instance
 func (e *tracesExporter) getCommonAttributes() []attribute.KeyValue {
 	return []attribute.KeyValue{
+		attribute.String("exporter", "azuregigwarm"),
 		attribute.String("endpoint", e.cfg.Endpoint),
 		attribute.String("account", e.cfg.Account),
 		attribute.String("namespace", e.cfg.Namespace),
 		attribute.String("region", e.cfg.Region),
+		attribute.String("environment", e.cfg.Environment),
 	}
+}
+
+// getTraceAttributes returns attributes specific to a trace payload
+func (e *tracesExporter) getTraceAttributes(td ptrace.Traces) []attribute.KeyValue {
+	attrs := e.getCommonAttributes()
+
+	// Add trace-specific attributes
+	attrs = append(attrs,
+		attribute.Int("spans_count", td.SpanCount()),
+		attribute.Int("resource_spans_count", td.ResourceSpans().Len()),
+	)
+
+	return attrs
 }
 
 // uploadBatchWithRetry uploads a single batch with exponential backoff retry
