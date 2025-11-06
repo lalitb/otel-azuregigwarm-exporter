@@ -236,7 +236,7 @@ func (e *tracesExporter) getCommonAttributes() []attribute.KeyValue {
 		attribute.String("gigwarm_account", e.cfg.Account),
 		attribute.String("gigwarm_namespace", e.cfg.Namespace),
 		attribute.String("gigwarm_region", e.cfg.Region),
-		attribute.Uint32("gigwarm_config_major_version", e.cfg.ConfigMajorVersion),
+		attribute.Int64("gigwarm_config_major_version", int64(e.cfg.ConfigMajorVersion)),
 	}
 }
 
