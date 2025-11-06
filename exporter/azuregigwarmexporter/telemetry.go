@@ -23,6 +23,9 @@ type telemetry struct {
 	tracesExported      metric.Int64Counter
 	tracesExportErrors  metric.Int64Counter
 	tracesReceived      metric.Int64Counter
+	logsExported        metric.Int64Counter
+	logsExportErrors    metric.Int64Counter
+	logsReceived        metric.Int64Counter
 }
 
 // newTelemetry creates a new telemetry instance with Prometheus metrics
@@ -101,6 +104,33 @@ func newTelemetry(set component.TelemetrySettings) (*telemetry, error) {
 		return nil, err
 	}
 
+	logsExported, err := meter.Int64Counter(
+		"otelcol_exporter_sent_logs_total",
+		metric.WithDescription("Number of log records successfully exported to Azure GigWarm"),
+		metric.WithUnit("1"),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	logsExportErrors, err := meter.Int64Counter(
+		"otelcol_exporter_send_failed_logs_total",
+		metric.WithDescription("Number of log records that failed to export to Azure GigWarm"),
+		metric.WithUnit("1"),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	logsReceived, err := meter.Int64Counter(
+		"otelcol_exporter_received_logs_total",
+		metric.WithDescription("Number of log records received by the Azure GigWarm exporter"),
+		metric.WithUnit("1"),
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	return &telemetry{
 		spansExported:       spansExported,
 		spansExportErrors:   spansExportErrors,
@@ -110,6 +140,9 @@ func newTelemetry(set component.TelemetrySettings) (*telemetry, error) {
 		tracesExported:      tracesExported,
 		tracesExportErrors:  tracesExportErrors,
 		tracesReceived:      tracesReceived,
+		logsExported:        logsExported,
+		logsExportErrors:    logsExportErrors,
+		logsReceived:        logsReceived,
 	}, nil
 }
 
@@ -151,4 +184,19 @@ func (t *telemetry) recordTracesExported(ctx context.Context, attributes ...attr
 // recordTracesExportError records a failed trace export
 func (t *telemetry) recordTracesExportError(ctx context.Context, attributes ...attribute.KeyValue) {
 	t.tracesExportErrors.Add(ctx, 1, metric.WithAttributes(attributes...))
+}
+
+// recordLogsReceived records the number of log records received
+func (t *telemetry) recordLogsReceived(ctx context.Context, count int64, attributes ...attribute.KeyValue) {
+	t.logsReceived.Add(ctx, count, metric.WithAttributes(attributes...))
+}
+
+// recordLogsExported records the number of log records successfully exported
+func (t *telemetry) recordLogsExported(ctx context.Context, count int64, attributes ...attribute.KeyValue) {
+	t.logsExported.Add(ctx, count, metric.WithAttributes(attributes...))
+}
+
+// recordLogsExportError records the number of log records that failed to export
+func (t *telemetry) recordLogsExportError(ctx context.Context, count int64, attributes ...attribute.KeyValue) {
+	t.logsExportErrors.Add(ctx, count, metric.WithAttributes(attributes...))
 }

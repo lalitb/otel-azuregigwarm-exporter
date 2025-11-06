@@ -17,15 +17,17 @@ import (
 	cgogeneva "github.com/open-telemetry/otel-azuregigwarm-exporter/exporter/azuregigwarmexporter/internal/cgo"
 	"go.opentelemetry.io/collector/pdata/plog"
 	"go.opentelemetry.io/collector/pdata/plog/plogotlp"
+	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
 )
 
 // logsExporter implements the logs exporter for Azure Geneva Warm (GigWarm) via Rust FFI.
 type logsExporter struct {
-	params exporter.Settings
-	cfg    *Config
-	client *cgogeneva.GenevaClient
-	logger *zap.Logger
+	params    exporter.Settings
+	cfg       *Config
+	client    *cgogeneva.GenevaClient
+	logger    *zap.Logger
+	telemetry *telemetry
 }
 
 // logsExporter no longer needs to implement consumer.Logs or component.Component
@@ -36,6 +38,12 @@ func newLogsExporter(_ context.Context, set exporter.Settings, cfg *Config) (*lo
 	// Validate early to fail fast
 	if err := cfg.Validate(); err != nil {
 		return nil, fmt.Errorf("invalid azuregigwarm config: %w", err)
+	}
+
+	// Initialize telemetry
+	telemetryInst, err := newTelemetry(set.TelemetrySettings)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create telemetry: %w", err)
 	}
 
 	// Build CGO config
@@ -68,10 +76,11 @@ func newLogsExporter(_ context.Context, set exporter.Settings, cfg *Config) (*lo
 	}
 
 	return &logsExporter{
-		params: set,
-		cfg:    cfg,
-		client: client,
-		logger: set.Logger,
+		params:    set,
+		cfg:       cfg,
+		client:    client,
+		logger:    set.Logger,
+		telemetry: telemetryInst,
 	}, nil
 }
 
