@@ -112,12 +112,13 @@ func (e *tracesExporter) pushTraces(ctx context.Context, td ptrace.Traces) error
 	spanCount := td.SpanCount()
 
 	traceAttrs := e.getTraceAttributes(td)
+	spanAttrs := e.getCommonAttributes()
 
 	// Record that we received a trace request (once per pushTraces call)
 	e.telemetry.recordTracesReceived(ctx, traceAttrs...)
 
 	// Record the number of spans received (once per pushTraces call)
-	e.telemetry.recordSpansReceived(ctx, int64(spanCount), traceAttrs...)
+	e.telemetry.recordSpansReceived(ctx, int64(spanCount), spanAttrs...)
 
 	e.logger.Debug("Recording spans received",
 		zap.Int("span_count", spanCount),
@@ -128,7 +129,7 @@ func (e *tracesExporter) pushTraces(ctx context.Context, td ptrace.Traces) error
 	data, err := req.MarshalProto()
 	if err != nil {
 		// Record failure
-		e.telemetry.recordSpansExportError(ctx, int64(spanCount), append(traceAttrs,
+		e.telemetry.recordSpansExportError(ctx, int64(spanCount), append(spanAttrs,
 			attribute.String("error", "marshal_failed"),
 			attribute.String("phase", "encoding"))...)
 
@@ -145,7 +146,7 @@ func (e *tracesExporter) pushTraces(ctx context.Context, td ptrace.Traces) error
 	if err != nil {
 		e.logger.Error("Failed to encode spans for Geneva Warm", zap.Error(err))
 		// Record failure
-		e.telemetry.recordSpansExportError(ctx, int64(spanCount), append(traceAttrs,
+		e.telemetry.recordSpansExportError(ctx, int64(spanCount), append(spanAttrs,
 			attribute.String("error", "encoding_failed"),
 			attribute.String("phase", "encoding"))...)
 
@@ -163,7 +164,7 @@ func (e *tracesExporter) pushTraces(ctx context.Context, td ptrace.Traces) error
 	// Upload batches with retry logic
 	if err := e.uploadBatchesWithRetry(ctx, batches, n); err != nil {
 		// Record failure - spans failed to upload
-		e.telemetry.recordSpansExportError(ctx, int64(spanCount), append(traceAttrs,
+		e.telemetry.recordSpansExportError(ctx, int64(spanCount), append(spanAttrs,
 			attribute.String("error", "upload_failed"),
 			attribute.String("phase", "upload"))...)
 
@@ -176,7 +177,7 @@ func (e *tracesExporter) pushTraces(ctx context.Context, td ptrace.Traces) error
 	}
 
 	// Record success - metrics recorded only once per successful trace export
-	e.telemetry.recordSpansExported(ctx, int64(spanCount), traceAttrs...)
+	e.telemetry.recordSpansExported(ctx, int64(spanCount), spanAttrs...)
 
 	// Record trace export success - recorded only once per successful trace export
 	e.telemetry.recordTracesExported(ctx, traceAttrs...)
