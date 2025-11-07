@@ -17,15 +17,17 @@ import (
 	cgogeneva "github.com/open-telemetry/otel-azuregigwarm-exporter/exporter/azuregigwarmexporter/internal/cgo"
 	"go.opentelemetry.io/collector/pdata/plog"
 	"go.opentelemetry.io/collector/pdata/plog/plogotlp"
+	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
 )
 
 // logsExporter implements the logs exporter for Azure Geneva Warm (GigWarm) via Rust FFI.
 type logsExporter struct {
-	params exporter.Settings
-	cfg    *Config
-	client *cgogeneva.GenevaClient
-	logger *zap.Logger
+	params    exporter.Settings
+	cfg       *Config
+	client    *cgogeneva.GenevaClient
+	logger    *zap.Logger
+	telemetry *telemetry
 }
 
 // logsExporter no longer needs to implement consumer.Logs or component.Component
@@ -36,6 +38,12 @@ func newLogsExporter(_ context.Context, set exporter.Settings, cfg *Config) (*lo
 	// Validate early to fail fast
 	if err := cfg.Validate(); err != nil {
 		return nil, fmt.Errorf("invalid azuregigwarm config: %w", err)
+	}
+
+	// Initialize telemetry
+	telemetryInst, err := newTelemetry(set.TelemetrySettings)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create telemetry: %w", err)
 	}
 
 	// Build CGO config
@@ -68,10 +76,11 @@ func newLogsExporter(_ context.Context, set exporter.Settings, cfg *Config) (*lo
 	}
 
 	return &logsExporter{
-		params: set,
-		cfg:    cfg,
-		client: client,
-		logger: set.Logger,
+		params:    set,
+		cfg:       cfg,
+		client:    client,
+		logger:    set.Logger,
+		telemetry: telemetryInst,
 	}, nil
 }
 
@@ -98,10 +107,26 @@ func (e *logsExporter) shutdown(_ context.Context) error {
 
 // pushLogs implements the push function for exporterhelper and sends logs via Rust FFI.
 func (e *logsExporter) pushLogs(ctx context.Context, ld plog.Logs) error {
+	logRecordCount := ld.LogRecordCount()
+
+	logAttrs := e.getCommonAttributes()
+
+	// Record that we received a log request (once per pushLogs call)
+	e.telemetry.recordLogsReceived(ctx, int64(logRecordCount), logAttrs...)
+
+	e.logger.Debug("Recording logs received",
+		zap.Int("log_records_count", logRecordCount),
+		zap.Int("resource_logs", ld.ResourceLogs().Len()))
+
 	// Marshal to OTLP ExportLogsServiceRequest protobuf bytes
 	req := plogotlp.NewExportRequestFromLogs(ld)
 	data, err := req.MarshalProto()
 	if err != nil {
+		// Record failure
+		e.telemetry.recordLogsExportError(ctx, int64(logRecordCount), append(logAttrs,
+			attribute.String("error", "marshal_failed"),
+			attribute.String("phase", "encoding"))...)
+
 		return fmt.Errorf("failed to marshal logs to protobuf: %w", err)
 	}
 
@@ -109,6 +134,11 @@ func (e *logsExporter) pushLogs(ctx context.Context, ld plog.Logs) error {
 	batches, err := e.client.EncodeAndCompressLogs(data)
 	if err != nil {
 		e.logger.Error("Failed to encode logs for Geneva Warm", zap.Error(err))
+		// Record failure
+		e.telemetry.recordLogsExportError(ctx, int64(logRecordCount), append(logAttrs,
+			attribute.String("error", "encoding_failed"),
+			attribute.String("phase", "encoding"))...)
+
 		return fmt.Errorf("failed to encode logs for Geneva Warm: %w", err)
 	}
 	defer batches.Close()
@@ -117,11 +147,23 @@ func (e *logsExporter) pushLogs(ctx context.Context, ld plog.Logs) error {
 
 	// Upload batches with retry logic
 	if err := e.uploadBatchesWithRetry(ctx, batches, n); err != nil {
+		// Record failure - logs failed to upload
+		e.telemetry.recordLogsExportError(ctx, int64(logRecordCount), append(logAttrs,
+			attribute.String("error", "upload_failed"),
+			attribute.String("phase", "upload"))...)
+
 		return err
 	}
 
+	// Record success - metrics recorded only once per successful log export
+	e.telemetry.recordLogsExported(ctx, int64(logRecordCount), logAttrs...)
+
+	e.logger.Debug("Recording logs exported",
+		zap.Int("log_records_count", logRecordCount),
+		zap.Int("resource_logs", ld.ResourceLogs().Len()))
+
 	e.logger.Debug("Successfully uploaded logs to Geneva Warm",
-		zap.Int("log_records", ld.LogRecordCount()),
+		zap.Int("log_records", logRecordCount),
 		zap.Int("batches", n),
 	)
 	return nil
@@ -172,6 +214,9 @@ func (e *logsExporter) uploadBatchesWithRetry(ctx context.Context, batches *cgog
 
 // uploadBatchWithRetry uploads a single batch with exponential backoff retry
 func (e *logsExporter) uploadBatchWithRetry(ctx context.Context, batches *cgogeneva.EncodedBatches, index int) error {
+	// Use common attributes for batch metrics (basic exporter attributes without log-specific data)
+	batchAttrs := e.getCommonAttributes()
+
 	if !e.cfg.BatchRetryConfig.Enabled {
 		// Batch retry disabled, upload once
 		if err := e.client.UploadBatch(batches, index); err != nil {
@@ -179,8 +224,15 @@ func (e *logsExporter) uploadBatchWithRetry(ctx context.Context, batches *cgogen
 				zap.Int("batch_index", index),
 				zap.Error(err),
 			)
+			// Record batch failure
+			e.telemetry.recordBatchExportError(ctx, append(batchAttrs,
+				attribute.String("error", "upload_failed"),
+				attribute.Bool("retry_enabled", false))...)
 			return fmt.Errorf("failed to upload logs batch %d to Geneva Warm: %w", index, err)
 		}
+		// Record batch success
+		e.telemetry.recordBatchExported(ctx, append(batchAttrs,
+			attribute.Bool("retry_enabled", false))...)
 		return nil
 	}
 
@@ -218,6 +270,10 @@ func (e *logsExporter) uploadBatchWithRetry(ctx context.Context, batches *cgogen
 					zap.Int("attempt", attempt+1),
 				)
 			}
+			// Record batch success
+			e.telemetry.recordBatchExported(ctx, append(batchAttrs,
+				attribute.Bool("retry_enabled", true),
+				attribute.Int("attempts", attempt+1))...)
 			return nil
 		}
 
@@ -257,7 +313,26 @@ func (e *logsExporter) uploadBatchWithRetry(ctx context.Context, batches *cgogen
 		zap.Int("attempts", maxRetries+1),
 		zap.Error(lastErr),
 	)
+
+	// Record batch failure
+	e.telemetry.recordBatchExportError(ctx, append(batchAttrs,
+		attribute.String("error", "max_retries_exceeded"),
+		attribute.Bool("retry_enabled", true),
+		attribute.Int("attempts", maxRetries+1))...)
+
 	return fmt.Errorf("failed to upload logs batch %d after %d attempts: %w", index, maxRetries+1, lastErr)
+}
+
+// getCommonAttributes returns the common telemetry attributes for this exporter instance
+func (e *logsExporter) getCommonAttributes() []attribute.KeyValue {
+	return []attribute.KeyValue{
+		attribute.String("exporter", "azuregigwarm"),
+		attribute.String("gigwarm_environment", e.cfg.Environment),
+		attribute.String("gigwarm_account", e.cfg.Account),
+		attribute.String("gigwarm_namespace", e.cfg.Namespace),
+		attribute.String("gigwarm_region", e.cfg.Region),
+		attribute.Int64("gigwarm_config_major_version", int64(e.cfg.ConfigMajorVersion)),
+	}
 }
 
 // These interface methods are no longer needed because exporterhelper wraps the exporter
