@@ -33,7 +33,7 @@ func newTelemetry(set component.TelemetrySettings) (*telemetry, error) {
 	meter := set.MeterProvider.Meter("azuregigwarmexporter")
 
 	spansExported, err := meter.Int64Counter(
-		"otelcol_exporter_sent_spans_total",
+		"azuregigwarm_exporter_sent_spans_total",
 		metric.WithDescription("Number of spans successfully exported to Azure GigWarm"),
 		metric.WithUnit("1"),
 	)
@@ -42,7 +42,7 @@ func newTelemetry(set component.TelemetrySettings) (*telemetry, error) {
 	}
 
 	spansExportErrors, err := meter.Int64Counter(
-		"otelcol_exporter_send_failed_spans_total",
+		"azuregigwarm_exporter_send_failed_spans_total",
 		metric.WithDescription("Number of spans that failed to export to Azure GigWarm"),
 		metric.WithUnit("1"),
 	)
@@ -51,7 +51,7 @@ func newTelemetry(set component.TelemetrySettings) (*telemetry, error) {
 	}
 
 	spansReceived, err := meter.Int64Counter(
-		"otelcol_exporter_received_spans_total",
+		"azuregigwarm_exporter_received_spans_total",
 		metric.WithDescription("Number of spans received by the Azure GigWarm exporter"),
 		metric.WithUnit("1"),
 	)
@@ -60,7 +60,7 @@ func newTelemetry(set component.TelemetrySettings) (*telemetry, error) {
 	}
 
 	batchesExported, err := meter.Int64Counter(
-		"otelcol_exporter_sent_batches_total",
+		"azuregigwarm_exporter_sent_batches_total",
 		metric.WithDescription("Number of batches successfully exported to Azure GigWarm"),
 		metric.WithUnit("1"),
 	)
@@ -69,7 +69,7 @@ func newTelemetry(set component.TelemetrySettings) (*telemetry, error) {
 	}
 
 	batchesExportErrors, err := meter.Int64Counter(
-		"otelcol_exporter_send_failed_batches_total",
+		"azuregigwarm_exporter_send_failed_batches_total",
 		metric.WithDescription("Number of batches that failed to export to Azure GigWarm"),
 		metric.WithUnit("1"),
 	)
@@ -78,7 +78,7 @@ func newTelemetry(set component.TelemetrySettings) (*telemetry, error) {
 	}
 
 	tracesExported, err := meter.Int64Counter(
-		"otelcol_exporter_sent_traces_total",
+		"azuregigwarm_exporter_sent_traces_total",
 		metric.WithDescription("Number of trace requests successfully exported to Azure GigWarm"),
 		metric.WithUnit("1"),
 	)
@@ -87,7 +87,7 @@ func newTelemetry(set component.TelemetrySettings) (*telemetry, error) {
 	}
 
 	tracesExportErrors, err := meter.Int64Counter(
-		"otelcol_exporter_send_failed_traces_total",
+		"azuregigwarm_exporter_send_failed_traces_total",
 		metric.WithDescription("Number of trace requests that failed to export to Azure GigWarm"),
 		metric.WithUnit("1"),
 	)
@@ -96,7 +96,7 @@ func newTelemetry(set component.TelemetrySettings) (*telemetry, error) {
 	}
 
 	tracesReceived, err := meter.Int64Counter(
-		"otelcol_exporter_received_traces_total",
+		"azuregigwarm_exporter_received_traces_total",
 		metric.WithDescription("Number of trace requests received by the Azure GigWarm exporter"),
 		metric.WithUnit("1"),
 	)
@@ -105,7 +105,7 @@ func newTelemetry(set component.TelemetrySettings) (*telemetry, error) {
 	}
 
 	logsExported, err := meter.Int64Counter(
-		"otelcol_exporter_sent_logs_total",
+		"azuregigwarm_exporter_sent_logs_total",
 		metric.WithDescription("Number of log records successfully exported to Azure GigWarm"),
 		metric.WithUnit("1"),
 	)
@@ -114,7 +114,7 @@ func newTelemetry(set component.TelemetrySettings) (*telemetry, error) {
 	}
 
 	logsExportErrors, err := meter.Int64Counter(
-		"otelcol_exporter_send_failed_logs_total",
+		"azuregigwarm_exporter_send_failed_logs_total",
 		metric.WithDescription("Number of log records that failed to export to Azure GigWarm"),
 		metric.WithUnit("1"),
 	)
@@ -123,7 +123,7 @@ func newTelemetry(set component.TelemetrySettings) (*telemetry, error) {
 	}
 
 	logsReceived, err := meter.Int64Counter(
-		"otelcol_exporter_received_logs_total",
+		"azuregigwarm_exporter_received_logs_total",
 		metric.WithDescription("Number of log records received by the Azure GigWarm exporter"),
 		metric.WithUnit("1"),
 	)
