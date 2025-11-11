@@ -239,7 +239,6 @@ func (e *tracesExporter) uploadBatchesWithRetry(ctx context.Context, batches *cg
 // getCommonAttributes returns the common telemetry attributes for this exporter instance
 func (e *tracesExporter) getCommonAttributes() []attribute.KeyValue {
 	return []attribute.KeyValue{
-		attribute.String("exporter", "azuregigwarm"),
 		attribute.String("gigwarm_environment", e.cfg.Environment),
 		attribute.String("gigwarm_account", e.cfg.Account),
 		attribute.String("gigwarm_namespace", e.cfg.Namespace),
