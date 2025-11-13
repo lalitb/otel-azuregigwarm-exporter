@@ -96,7 +96,7 @@ func (f *factory) createTracesExporter(ctx context.Context, set exporter.Setting
 		return nil, errUnexpectedConfigurationType
 	}
 
-    overrideConfigFromEnv(cfg)
+	overrideConfigFromEnv(cfg)
 
 	exp, err := newTracesExporter(ctx, set, cfg)
 	if err != nil {
