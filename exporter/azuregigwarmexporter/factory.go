@@ -47,7 +47,7 @@ func NewFactory() exporter.Factory {
 // overrideConfigFromEnv overrides config values - Role and RoleInstance from environment variables if set.
 func overrideConfigFromEnv(cfg *Config) {
 	if role := os.Getenv("GENEVA_ROLE_NAME"); role != "" {
-		cfg.Role = role
+		cfg.RoleName = role
 	}
 	if roleInstance := os.Getenv("GENEVA_ROLE_INSTANCE"); roleInstance != "" {
 		cfg.RoleInstance = roleInstance
