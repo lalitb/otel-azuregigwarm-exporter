@@ -46,6 +46,7 @@ cd ../../..
 ```
 
 ## Configuration
+> Note: The values of role_name and role_instance can be override through GENEVA_ROLE_NAME AND GENEVA_ROLE_INSTANCE environment variables.
 
 ### Basic Configuration
 
