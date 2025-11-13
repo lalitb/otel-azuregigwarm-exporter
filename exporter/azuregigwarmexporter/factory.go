@@ -15,6 +15,10 @@ import (
 	"go.opentelemetry.io/collector/exporter/exporterhelper"
 )
 
+import (
+	"os"
+)
+
 var (
 	Type = component.MustNewType("azuregigwarm")
 )
@@ -40,6 +44,16 @@ func NewFactory() exporter.Factory {
 	)
 }
 
+// overrideConfigFromEnv overrides config values - Role and RoleInstance from environment variables if set.
+func overrideConfigFromEnv(cfg *Config) {
+	if role := os.Getenv("GENEVA_ROLE_NAME"); role != "" {
+		cfg.Role = role
+	}
+	if roleInstance := os.Getenv("GENEVA_ROLE_INSTANCE"); roleInstance != "" {
+		cfg.RoleInstance = roleInstance
+	}
+}
+
 // createDefaultConfig creates the default exporter configuration.
 func (f *factory) createDefaultConfig() component.Config {
 	return &Config{
@@ -55,6 +69,7 @@ func (f *factory) createLogsExporter(ctx context.Context, set exporter.Settings,
 	if !ok {
 		return nil, errUnexpectedConfigurationType
 	}
+	overrideConfigFromEnv(cfg)
 
 	exp, err := newLogsExporter(ctx, set, cfg)
 	if err != nil {
@@ -80,6 +95,8 @@ func (f *factory) createTracesExporter(ctx context.Context, set exporter.Setting
 	if !ok {
 		return nil, errUnexpectedConfigurationType
 	}
+
+    overrideConfigFromEnv(cfg)
 
 	exp, err := newTracesExporter(ctx, set, cfg)
 	if err != nil {
